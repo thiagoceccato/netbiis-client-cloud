@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netbiis · Client Cloud</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --mg:#C2004E;
+  --bg:#0F1117;
+  --bg2:#161B22;
+  --bg3:#1C2128;
+  --bg4:#21262D;
+  --border:#30363D;
+  --border2:#3D444D;
+  --text:#E6EDF3;
+  --text2:#8B949E;
+  --text3:#484F58;
+  --green:#2EA043;--green-bg:rgba(46,160,67,0.1);--green-border:rgba(46,160,67,0.3);
+  --amber:#D29922;--amber-bg:rgba(210,153,34,0.1);--amber-border:rgba(210,153,34,0.3);
+  --red:#F85149;--red-bg:rgba(248,81,73,0.1);--red-border:rgba(248,81,73,0.3);
+  --indigo:#58A6FF;--indigo-bg:rgba(88,166,255,0.1);--indigo-border:rgba(88,166,255,0.3);
+  --sidebar:220px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:var(--indigo);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg4);padding:1px 5px;border-radius:4px;color:var(--text);border:1px solid var(--border)}
+
+/* ── LAYOUT ── */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar);flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-brand{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.sb-hex{width:20px;height:20px;background:var(--mg);clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);flex-shrink:0}
+.sb-name{font-weight:700;font-size:13px;color:var(--text);letter-spacing:-0.01em}
+.sb-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:1px}
+.sb-section{padding:16px 12px 6px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)}
+.sb-clients{flex:1;overflow-y:auto}
+.sb-item{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;border-radius:6px;margin:1px 6px;transition:background 0.1s}
+.sb-item:hover{background:var(--bg4)}
+.sb-item.active{background:rgba(194,0,78,0.15)}
+.sb-item.active .sb-item-name{color:var(--text)}
+.sb-av{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;color:#fff;flex-shrink:0}
+.sb-item-name{font-size:12.5px;font-weight:500;color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.sb-dot.ok{background:var(--green)}
+.sb-dot.warn{background:var(--amber)}
+.sb-dot.blocked{background:var(--red)}
+.sb-dot.neutral{background:var(--text3)}
+.sb-add{margin:8px;padding:8px;border:1px dashed var(--border2);border-radius:6px;text-align:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);transition:all 0.15s}
+.sb-add:hover{border-color:var(--mg);color:var(--mg)}
+.sb-footer{padding:10px 12px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+
+/* ── CLIENT HEADER ── */
+.ch{background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.ch-top{display:flex;align-items:center;gap:12px;padding:14px 20px 0}
+.ch-av{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;flex-shrink:0}
+.ch-name{font-weight:700;font-size:16px;letter-spacing:-0.02em;color:var(--text);line-height:1}
+.ch-meta{display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap}
+.ch-market{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:0.04em}
+.ch-loc{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)}
+.nav{display:flex;padding:0 20px}
+.nav-btn{padding:10px 14px;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;color:var(--text2);border-bottom:2px solid transparent;transition:all 0.15s;margin-bottom:-1px;white-space:nowrap}
+.nav-btn:hover{color:var(--text)}
+.nav-btn.active{color:var(--text);border-bottom-color:var(--mg)}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow-y:auto;padding:20px}
+.tab{display:none}
+.tab.active{display:block}
+
+/* ── EMPTY / NO CLIENT ── */
+.no-client{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.no-client-hex{width:32px;height:32px;background:var(--bg4);clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)}
+.no-client-txt{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)}
+.empty{padding:32px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3)}
+
+/* ── PILLS ── */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;border:1px solid transparent}
+.pill.ok{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.pill.warn{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+.pill.blocked{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.pill.neutral{background:var(--bg4);color:var(--text2);border-color:var(--border)}
+.pill.indigo{background:var(--indigo-bg);color:var(--indigo);border-color:var(--indigo-border)}
+.pill.mag{background:rgba(194,0,78,0.15);color:var(--mg);border-color:rgba(194,0,78,0.3)}
+.led{width:5px;height:5px;border-radius:50%;display:inline-block}
+.led.ok{background:var(--green)}
+.led.warn{background:var(--amber)}
+.led.blocked{background:var(--red)}
+.led.neutral{background:var(--text3)}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;gap:8px;margin-bottom:12px;margin-top:24px}
+.sh:first-child{margin-top:0}
+.sh-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--mg)}
+.sh-title{font-size:13px;font-weight:600;color:var(--text)}
+.sh-line{flex:1;height:1px;background:var(--border)}
+
+/* ── INFO GRID ── */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:16px}
+.info-card{padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px}
+.info-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.info-value{font-size:13px;font-weight:600;color:var(--text);line-height:1.3}
+
+/* ── DESCRIPTION BOX ── */
+.desc-box{padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;font-size:13px;color:var(--text2);line-height:1.6}
+
+/* ── PEOPLE ── */
+.people-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.person{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:7px;min-width:180px}
+.p-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;color:#fff;flex-shrink:0}
+.p-name{font-weight:600;font-size:12.5px;color:var(--text);line-height:1.2}
+.p-role{font-size:11px;color:var(--text3)}
+.p-badge{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 5px;border-radius:3px}
+.p-badge.cliente{background:rgba(222,72,38,0.12);color:#DE4826}
+.p-badge.netbiis{background:rgba(194,0,78,0.1);color:var(--mg)}
+
+/* ── STACK TAGS ── */
+.stack-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.stack-tag{padding:4px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;font-size:12px;font-weight:500;color:var(--text)}
+.stack-tag span{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-left:5px}
+
+/* ── PROJECT CARD ── */
+.proj{background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;overflow:hidden}
+.proj-head{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;border-left:3px solid var(--mg)}
+.proj-head:hover{background:var(--bg3)}
+.proj-name{font-size:14px;font-weight:600;color:var(--text);flex:1;letter-spacing:-0.01em}
+.proj-stats{display:flex;gap:6px;align-items:center}
+.proj-toggle{color:var(--text3);font-size:12px;transition:transform 0.15s;line-height:1;flex-shrink:0}
+.proj-toggle.open{transform:rotate(90deg)}
+.proj-body{display:none;border-top:1px solid var(--border)}
+.proj-body.open{display:block}
+.proj-section{padding:14px 16px;border-bottom:1px solid var(--border)}
+.proj-section:last-child{border-bottom:none}
+
+/* ── DELIVERABLES ── */
+.deliverable-list{list-style:none;padding:0;margin:0}
+.deliverable-list li{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:12.5px;color:var(--text2);border-bottom:1px solid var(--border)}
+.deliverable-list li:last-child{border-bottom:none}
+.deliverable-list li::before{content:"›";color:var(--mg);font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* ── JOURNEY ACCORDION ── */
+.journey{background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;overflow:hidden}
+.journey-head{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer}
+.journey-head:hover{background:var(--bg4)}
+.journey-name{font-weight:600;font-size:12.5px;color:var(--text);flex:1}
+.journey-emails{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)}
+.journey-toggle{color:var(--text3);font-size:11px;transition:transform 0.15s}
+.journey-toggle.open{transform:rotate(90deg)}
+.journey-body{display:none;border-top:1px solid var(--border);padding:12px}
+.journey-body.open{display:block}
+.jb-section-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;margin-top:12px}
+.jb-section-label:first-child{margin-top:0}
+.fields-wrap{display:flex;flex-wrap:wrap;gap:4px}
+.field-tag{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;background:var(--bg4);border:1px solid var(--border);border-radius:4px;color:var(--text2)}
+.missing-list{list-style:none;padding:0}
+.missing-list li{display:flex;align-items:flex-start;gap:6px;padding:4px 0;font-size:12px;color:var(--text2)}
+.missing-list li::before{content:"○";color:var(--amber);font-size:10px;flex-shrink:0;margin-top:2px}
+.obs-box{margin-top:10px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:5px;font-size:12px;color:var(--text3);line-height:1.5;font-style:italic}
+
+/* ── ISSUES dentro de journey ── */
+.j-issues{margin-top:10px}
+.j-issue{padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:5px;margin-bottom:5px;border-left:2px solid var(--red)}
+.j-issue.warn{border-left-color:var(--amber)}
+.j-issue.info{border-left-color:var(--indigo)}
+.j-issue-id{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:2px}
+.j-issue-title{font-size:12.5px;font-weight:500;color:var(--text);margin-bottom:5px}
+.j-issue-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.j-issue-by{font-size:11px;color:var(--text3)}
+
+/* ── DATA TABLE ── */
+.dtable{width:100%;border-collapse:collapse;font-size:12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.dtable th{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-align:left;padding:8px 12px;background:var(--bg4);color:var(--text3);border-bottom:1px solid var(--border)}
+.dtable td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle}
+.dtable tr:last-child td{border-bottom:none}
+.dtable td:first-child{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:600;color:var(--text)}
+.dtable tr:hover td{background:var(--bg4)}
+
+/* ── DOC LIST ── */
+.doc-list{display:flex;flex-direction:column;gap:4px}
+.doc-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;text-decoration:none;transition:border-color 0.15s;cursor:pointer}
+.doc-row:hover{border-color:var(--mg)}
+.doc-icon{width:28px;height:28px;border-radius:5px;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:var(--text3);flex-shrink:0}
+.doc-name{font-size:12.5px;font-weight:500;color:var(--text);flex:1}
+.doc-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)}
+
+/* ── AGENDA ── */
+.agenda-list{display:flex;flex-direction:column;gap:4px}
+.agenda-row{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px}
+.agenda-date{text-align:center;min-width:38px;padding:5px 6px;background:var(--bg4);border-radius:5px;border:1px solid var(--border)}
+.agenda-day{font-weight:700;font-size:16px;color:var(--text);line-height:1;font-family:'Inter',sans-serif}
+.agenda-month{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:1px}
+.agenda-title{font-weight:600;font-size:12.5px;color:var(--text);margin-bottom:2px}
+.agenda-parts{font-size:11.5px;color:var(--text3)}
+
+/* ── TRANS ── */
+.trans-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.trans-col-head{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.trans-row{padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;margin-bottom:5px}
+.trans-title{font-weight:600;font-size:12.5px;color:var(--text);margin-bottom:2px}
+.trans-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)}
+.trans-summary{font-size:12px;color:var(--text2);margin-top:5px;line-height:1.5}
+.link-blue{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--indigo);display:block;margin-top:5px}
+
+/* ── DEBUG ── */
+#dbg{position:fixed;bottom:0;left:0;right:0;background:#0A0A0B;color:#a3e635;font-family:monospace;font-size:11px;padding:8px 14px;max-height:140px;overflow-y:auto;z-index:9999;border-top:2px solid var(--mg);display:none}
+#dbg.show{display:block}
+#dbg-btn{position:fixed;bottom:0;right:0;background:var(--mg);color:#fff;font-family:monospace;font-size:10px;padding:3px 10px;cursor:pointer;z-index:10000;border:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-hex"></div>
+      <div><div class="sb-name">Netbiis</div><div class="sb-sub">Client Cloud</div></div>
+    </div>
+    <div class="sb-section">Clientes</div>
+    <div class="sb-clients" id="client-list">
+      <div style="padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">Carregando...</div>
+    </div>
+    <div class="sb-add" onclick="alert('Em breve')">+ Novo cliente</div>
+    <div class="sb-footer">v0.2 · Netbiis</div>
+  </aside>
+
+  <div class="main" id="main">
+    <div class="no-client">
+      <div class="no-client-hex"></div>
+      <div class="no-client-txt">Selecione um cliente</div>
+    </div>
+  </div>
+</div>
+
+<button id="dbg-btn" onclick="document.getElementById('dbg').classList.toggle('show')">DBG</button>
+<div id="dbg"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────
+const PUB = '2PACX-1vSWBnP21S5C86OZYYCOqijT_mXtq8XNdpNBQG2mnzhL9FOgirDfaQ5nXDqPTYCzJvCFNWflSGF_d7tg';
+const GIDS = {
+  clientes:'1343344067', stakeholders:'1958512368', stack:'1791147887',
+  projetos:'693403923', jornadas:'1551819716', fontes_dados:'1267510316',
+  issues:'1581403890', documentos:'1019560512', agendas:'418089559', transcricoes:'1097052222'
+};
+
+let D={}, activeClient=null, activeTab='overview';
+
+// ── DBG ───────────────────────────────────────────────────────
+function dbg(m,e=false){
+  const el=document.getElementById('dbg');
+  const d=document.createElement('div');
+  d.style.color=e?'#f85149':'#a3e635';
+  d.textContent=`[${new Date().toLocaleTimeString()}] ${m}`;
+  el.appendChild(d); el.scrollTop=el.scrollHeight;
+}
+
+// ── FETCH ─────────────────────────────────────────────────────
+async function get(name){
+  const gid=GIDS[name];
+  if(!gid||gid.includes('['))return[];
+  const url=`https://docs.google.com/spreadsheets/d/e/${PUB}/pub?output=csv&gid=${gid}&single=true`;
+  dbg(`fetch ${name}`);
+  const r=await fetch(url,{cache:'no-cache'});
+  if(!r.ok)throw new Error(`${r.status}`);
+  const t=await r.text();
+  dbg(`${name} → ${t.length}c`);
+  return csv(t);
+}
+
+function csv(text){
+  const lines=text.trim().split('\n');
+  if(lines.length<2)return[];
+  const h=line(lines[0]);
+  return lines.slice(1).map(l=>{
+    const v=line(l),o={};
+    h.forEach((k,i)=>o[k.trim()]=(v[i]||'').trim());
+    return o;
+  }).filter(r=>Object.values(r).some(v=>v));
+}
+function line(s){
+  const o=[];let c='',q=false;
+  for(let i=0;i<s.length;i++){
+    const ch=s[i];
+    if(ch==='"'){if(q&&s[i+1]==='"'){c+='"';i++;}else q=!q;}
+    else if(ch===','&&!q){o.push(c);c='';}
+    else c+=ch;
+  }
+  o.push(c);return o;
+}
+
+// ── LOAD ──────────────────────────────────────────────────────
+async function load(){
+  dbg('carregando...');
+  for(const k of Object.keys(GIDS)){
+    try{D[k]=await get(k);}catch(e){dbg(`ERRO ${k}: ${e.message}`,true);D[k]=[];}
+  }
+  dbg(`clientes: ${(D.clientes||[]).length}`);
+  renderSidebar();
+  if(D.clientes?.length)select(D.clientes[0].id);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function ini(n){if(!n)return'?';return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()}
+function sc(s){
+  if(!s)return'neutral';const v=s.toLowerCase();
+  if(v.includes('andamento')||v.includes('ok')||v.includes('ativo')||v.includes('rodando'))return'ok';
+  if(v.includes('risco')||v.includes('aten')||v.includes('parcial')||v.includes('vazia')||v.includes('mapear'))return'warn';
+  if(v.includes('bloq')||v.includes('críti')||v.includes('não existe')||v.includes('missing'))return'blocked';
+  return'neutral';
+}
+function ic(sev){if(!sev)return'';const v=sev.toLowerCase();if(v.includes('críti'))return'';if(v.includes('aten'))return'warn';return'info';}
+const MOS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+// ── SIDEBAR ───────────────────────────────────────────────────
+function renderSidebar(){
+  const el=document.getElementById('client-list');
+  if(!D.clientes?.length){el.innerHTML='<div style="padding:10px 12px;font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--text3)">Nenhum cliente</div>';return;}
+  el.innerHTML=D.clientes.map(c=>`
+    <div class="sb-item ${activeClient===c.id?'active':''}" onclick="select('${c.id}')">
+      <div class="sb-av" style="background:${c.cor||'#444'}">${ini(c.nome)}</div>
+      <span class="sb-item-name">${c.nome}</span>
+      <span class="sb-dot ${sc(c.status_geral)}"></span>
+    </div>`).join('');
+}
+
+// ── SELECT ────────────────────────────────────────────────────
+function select(id){activeClient=id;activeTab='overview';renderSidebar();renderMain();}
+
+function tab(id){
+  activeTab=id;
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+  document.querySelectorAll('.tab').forEach(p=>p.classList.toggle('active',p.id==='t-'+id));
+}
+
+// ── MAIN ──────────────────────────────────────────────────────
+function renderMain(){
+  const c=D.clientes.find(x=>x.id===activeClient);
+  if(!c)return;
+  const col=c.cor||'#555';
+  const s=sc(c.status_geral);
+  const sh=(D.stakeholders||[]).filter(x=>x.cliente_id===activeClient);
+  const stk=(D.stack||[]).filter(x=>x.cliente_id===activeClient);
+  const proj=(D.projetos||[]).filter(x=>x.cliente_id===activeClient);
+  const ag=(D.agendas||[]).filter(x=>x.cliente_id===activeClient);
+  const tr=(D.transcricoes||[]).filter(x=>x.cliente_id===activeClient);
+
+  const tabs=[
+    {id:'overview',label:'Visão Geral'},
+    {id:'projects',label:`Projetos${proj.length?` (${proj.length})`:''}` },
+    {id:'docs',label:'Documentos'},
+    {id:'agenda',label:'Agendas'},
+    {id:'trans',label:'Transcrições'},
+  ];
+
+  document.getElementById('main').innerHTML=`
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-av" style="background:${col}">${ini(c.nome)}</div>
+        <div style="flex:1">
+          <div class="ch-name">${c.nome}</div>
+          <div class="ch-meta">
+            ${c.pais?`<span class="ch-loc">${c.cidade?c.cidade+', ':''} ${c.pais}</span>`:''}
+            <span class="ch-market">${c.mercado||''}</span>
+            <span class="pill ${s}"><span class="led ${s}"></span>${c.status_geral||'—'}</span>
+          </div>
+        </div>
+      </div>
+      <nav class="nav">
+        ${tabs.map(t=>`<button class="nav-btn ${activeTab===t.id?'active':''}" data-tab="${t.id}" onclick="tab('${t.id}')">${t.label}</button>`).join('')}
+      </nav>
+    </div>
+    <div class="content">
+      <div class="tab ${activeTab==='overview'?'active':''}" id="t-overview">${renderOverview(c,sh,stk)}</div>
+      <div class="tab ${activeTab==='projects'?'active':''}" id="t-projects">${renderProjects(proj)}</div>
+      <div class="tab ${activeTab==='docs'?'active':''}" id="t-docs">${renderDocs(proj)}</div>
+      <div class="tab ${activeTab==='agenda'?'active':''}" id="t-agenda">${renderAgenda(ag)}</div>
+      <div class="tab ${activeTab==='trans'?'active':''}" id="t-trans">${renderTrans(tr)}</div>
+    </div>`;
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────
+function renderOverview(c,sh,stk){
+  const cli=sh.filter(s=>s.tipo==='cliente');
+  const nb=sh.filter(s=>s.tipo==='netbiis');
+  return `
+    <div class="sh"><span class="sh-label">// Info</span><span class="sh-line"></span></div>
+    <div class="info-grid">
+      ${c.mercado?`<div class="info-card"><div class="info-label">Mercado</div><div class="info-value">${c.mercado}</div></div>`:''}
+      ${c.segmento?`<div class="info-card"><div class="info-label">Segmento</div><div class="info-value">${c.segmento}</div></div>`:''}
+      ${c.pais?`<div class="info-card"><div class="info-label">País</div><div class="info-value">${c.cidade?c.cidade+', ':''} ${c.pais}</div></div>`:''}
+      <div class="info-card"><div class="info-label">Status</div><div class="info-value"><span class="pill ${sc(c.status_geral)}">${c.status_geral||'—'}</span></div></div>
+    </div>
+    ${c.descricao?`<div class="desc-box">${c.descricao}</div>`:''}
+    ${stk.length?`
+    <div class="sh"><span class="sh-label">// Stack</span><span class="sh-line"></span></div>
+    <div class="stack-wrap">${stk.map(s=>`<div class="stack-tag">${s.tecnologia}<span>${s.categoria||''}</span></div>`).join('')}</div>`:''}
+    ${cli.length?`
+    <div class="sh"><span class="sh-label">// Cliente</span><span class="sh-title">Stakeholders</span><span class="sh-line"></span></div>
+    <div class="people-grid">${cli.map(s=>`<div class="person"><div class="p-av" style="background:#DE4826">${ini(s.nome)}</div><div><div class="p-name">${s.nome}</div><div class="p-role">${s.cargo||''}</div></div><div class="p-badge cliente">Cliente</div></div>`).join('')}</div>`:''}
+    ${nb.length?`
+    <div class="sh" style="margin-top:12px"><span class="sh-label">// Netbiis</span><span class="sh-title">Time</span><span class="sh-line"></span></div>
+    <div class="people-grid">${nb.map(s=>`<div class="person"><div class="p-av" style="background:rgba(194,0,78,0.2);color:var(--mg)">${ini(s.nome)}</div><div><div class="p-name">${s.nome}</div><div class="p-role">${s.cargo||''}</div></div><div class="p-badge netbiis">Netbiis</div></div>`).join('')}</div>`:''}
+  `;
+}
+
+// ── PROJECTS ──────────────────────────────────────────────────
+function renderProjects(proj){
+  if(!proj.length)return'<div class="empty">Nenhum projeto</div>';
+  return proj.map((p,i)=>{
+    const fontes=(D.fontes_dados||[]).filter(f=>f.projeto_id===p.id);
+    const jornadas=(D.jornadas||[]).filter(j=>j.projeto_id===p.id);
+    const allIssues=(D.issues||[]).filter(x=>x.projeto_id===p.id);
+    const globalIssues=allIssues.filter(x=>!x.jornada_id);
+    const abertos=allIssues.filter(x=>(x.status||'').toLowerCase().includes('aberto'));
+    const s=sc(p.status);
+    const delivs=p.deliverables?p.deliverables.split('\n').filter(Boolean):[];
+
+    return `
+      <div class="proj">
+        <div class="proj-head" onclick="toggleProj('pb${i}','pt${i}')">
+          <div style="flex:1">
+            <div class="proj-name">${p.nome}</div>
+            <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">
+              <span class="pill ${s}"><span class="led ${s}"></span>${p.status||'—'}</span>
+              ${jornadas.length?`<span class="pill neutral">${jornadas.length} jornadas</span>`:''}
+              ${fontes.length?`<span class="pill neutral">${fontes.length} fontes</span>`:''}
+              ${abertos.length?`<span class="pill blocked">${abertos.length} issues abertos</span>`:''}
+            </div>
+          </div>
+          <span class="proj-toggle" id="pt${i}">›</span>
+        </div>
+        <div class="proj-body" id="pb${i}">
+
+          ${p.descricao||p.escopo||delivs.length?`<div class="proj-section">
+            ${p.descricao?`<div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:${delivs.length?'12px':'0'}">${p.descricao}</div>`:''}
+            ${p.escopo?`<div style="margin-bottom:${delivs.length?'12px':'0'}"><span class="pill neutral" style="margin-bottom:6px">Escopo</span><div style="font-size:12.5px;color:var(--text3);margin-top:4px">${p.escopo}</div></div>`:''}
+            ${delivs.length?`
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Deliverables</div>
+              <ul class="deliverable-list">${delivs.map(d=>`<li>${d.replace(/^\d+\.\s*/,'')}</li>`).join('')}</ul>`:''}
+          </div>`:''}
+
+          ${fontes.length?`<div class="proj-section">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Fontes de Dados</div>
+            <table class="dtable">
+              <thead><tr><th>Fonte</th><th>Camada</th><th>Status</th><th>Emails</th><th>Responsável</th></tr></thead>
+              <tbody>${fontes.map(f=>`<tr>
+                <td><code>${f.nome}</code></td>
+                <td><span class="pill ${f.camada==='L2'?'mag':f.camada==='L1'?'warn':'neutral'}">${f.camada}</span></td>
+                <td><span class="pill ${sc(f.status)}">${f.status}</span></td>
+                <td style="font-size:11.5px;color:var(--text3)">${f.emails_impactados||'—'}</td>
+                <td style="font-size:11.5px;color:var(--text3)">${f.responsavel||'—'}</td>
+              </tr>`).join('')}</tbody>
+            </table>
+          </div>`:''}
+
+          ${jornadas.length?`<div class="proj-section">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Jornadas</div>
+            ${jornadas.map((j,ji)=>{
+              const jIssues=allIssues.filter(x=>x.jornada_id&&x.jornada_id.split(',').map(s=>s.trim()).includes(j.id));
+              const campos=j.campos_necessarios?j.campos_necessarios.split(',').map(s=>s.trim()).filter(Boolean):[];
+              const falta=j.o_que_falta?j.o_que_falta.split('·').map(s=>s.trim()).filter(Boolean):[];
+              const js=sc(j.status);
+              return `<div class="journey">
+                <div class="journey-head" onclick="toggleJ('jb${i}_${ji}','jt${i}_${ji}')">
+                  <span class="pill ${js}" style="flex-shrink:0"><span class="led ${js}"></span>${j.status||'—'}</span>
+                  <span class="journey-name">${j.nome}</span>
+                  ${j.emails&&j.emails!=='[preencher]'?`<span class="journey-emails">${j.emails} emails</span>`:''}
+                  ${jIssues.length?`<span class="pill blocked" style="margin-left:4px">${jIssues.length} issue${jIssues.length>1?'s':''}</span>`:''}
+                  <span class="journey-toggle" id="jt${i}_${ji}">›</span>
+                </div>
+                <div class="journey-body" id="jb${i}_${ji}">
+                  ${campos.length?`<div class="jb-section-label">Campos necessários</div><div class="fields-wrap">${campos.map(f=>`<span class="field-tag">${f}</span>`).join('')}</div>`:''}
+                  ${falta.length?`<div class="jb-section-label">O que falta para ativar</div><ul class="missing-list">${falta.map(f=>`<li>${f}</li>`).join('')}</ul>`:''}
+                  ${j.observacao&&!j.observacao.includes('preencher')?`<div class="obs-box">${j.observacao}</div>`:''}
+                  ${jIssues.length?`<div class="jb-section-label">Issues desta jornada</div><div class="j-issues">${jIssues.map(iss=>`
+                    <div class="j-issue ${ic(iss.severidade)}">
+                      <div class="j-issue-id">${iss.id}</div>
+                      <div class="j-issue-title">${iss.titulo}</div>
+                      <div class="j-issue-meta">
+                        <span class="pill ${sc(iss.severidade)}">${iss.severidade||'—'}</span>
+                        <span class="pill neutral">${iss.status||'—'}</span>
+                        <span class="j-issue-by">${iss.descoberto_por||''} · ${iss.data||''}</span>
+                      </div>
+                    </div>`).join('')}</div>`:''}
+                </div>
+              </div>`;
+            }).join('')}
+          </div>`:''}
+
+          ${globalIssues.length?`<div class="proj-section">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Issues do Projeto</div>
+            <div class="j-issues">${globalIssues.map(iss=>`
+              <div class="j-issue ${ic(iss.severidade)}">
+                <div class="j-issue-id">${iss.id}</div>
+                <div class="j-issue-title">${iss.titulo}</div>
+                <div class="j-issue-meta">
+                  <span class="pill ${sc(iss.severidade)}">${iss.severidade||'—'}</span>
+                  <span class="pill neutral">${iss.status||'—'}</span>
+                  <span class="j-issue-by">${iss.descoberto_por||''} · ${iss.data||''}</span>
+                </div>
+              </div>`).join('')}</div>
+          </div>`:''}
+
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleProj(b,t){const el=document.getElementById(b),tg=document.getElementById(t);if(el){el.classList.toggle('open');if(tg)tg.classList.toggle('open');}}
+function toggleJ(b,t){const el=document.getElementById(b),tg=document.getElementById(t);if(el){el.classList.toggle('open');if(tg)tg.classList.toggle('open');}}
+
+// ── DOCS ──────────────────────────────────────────────────────
+function renderDocs(proj){
+  const ids=proj.map(p=>p.id);
+  const docs=(D.documentos||[]).filter(d=>ids.includes(d.projeto_id));
+  if(!docs.length)return'<div class="empty">Nenhum documento</div>';
+  const byP={};
+  docs.forEach(d=>{if(!byP[d.projeto_id])byP[d.projeto_id]=[];byP[d.projeto_id].push(d);});
+  return Object.entries(byP).map(([pid,pd])=>{
+    const p=proj.find(x=>x.id===pid);
+    return `
+      <div class="sh"><span class="sh-label">// ${p?p.nome:pid}</span><span class="sh-line"></span></div>
+      <div class="doc-list">${pd.map(d=>`
+        <a class="doc-row" href="${d.url&&!d.url.includes('preencher')?d.url:'#'}" target="${d.url&&!d.url.includes('preencher')?'_blank':'_self'}">
+          <div class="doc-icon">${(d.tipo||'DOC').substring(0,3).toUpperCase()}</div>
+          <div class="doc-name">${d.nome}</div>
+          <span class="pill neutral">${d.tipo||'—'}</span>
+          <div class="doc-date">${d.data||''}</div>
+        </a>`).join('')}</div>`;
+  }).join('');
+}
+
+// ── AGENDA ────────────────────────────────────────────────────
+function renderAgenda(ag){
+  if(!ag.length)return'<div class="empty">Nenhuma agenda</div>';
+  return `<div class="agenda-list">${ag.map(a=>{
+    const p=(a.data||'').split('-');
+    return `<div class="agenda-row">
+      <div class="agenda-date"><div class="agenda-day">${p[2]||'—'}</div><div class="agenda-month">${p[1]?MOS[parseInt(p[1])-1]:''}</div></div>
+      <div style="flex:1"><div class="agenda-title">${a.titulo||'—'}</div><div class="agenda-parts">${a.participantes||''}</div></div>
+      <span class="pill neutral">${a.tipo||'—'}</span>
+      ${a.link&&!a.link.includes('preencher')?`<a href="${a.link}" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--indigo)">↗</a>`:''}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── TRANS ─────────────────────────────────────────────────────
+function renderTrans(tr){
+  if(!tr.length)return'<div class="empty">Nenhuma transcrição</div>';
+  const cli=tr.filter(t=>t.tipo==='cliente');
+  const int=tr.filter(t=>t.tipo!=='cliente');
+  const col=(items,label)=>`<div>
+    <div class="trans-col-head">// ${label} (${items.length})</div>
+    ${items.length?items.map(t=>`<div class="trans-row">
+      <div class="trans-title">${t.titulo||'—'}</div>
+      <div class="trans-meta">${t.data||''} · ${t.participantes||''}</div>
+      ${t.resumo?`<div class="trans-summary">${t.resumo}</div>`:''}
+      ${t.url&&!t.url.includes('preencher')?`<a href="${t.url}" target="_blank" class="link-blue">↗ Abrir</a>`:''}
+    </div>`).join(''):'<div class="empty" style="padding:16px 0">Nenhuma</div>'}
+  </div>`;
+  return `<div class="trans-cols">${col(cli,'Interações com o cliente')}${col(int,'Discussões internas')}</div>`;
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+load();
+</script>
+</body>
+</html>
