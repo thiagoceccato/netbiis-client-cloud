@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netbiis · Client Cloud</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --mg:#C2004E;
+  --bg:#0D1117;--bg2:#161B22;--bg3:#1C2128;--bg4:#21262D;
+  --border:#30363D;--border2:#3D444D;
+  --text:#E6EDF3;--text2:#8B949E;--text3:#484F58;
+  --green:#2EA043;--green-bg:rgba(46,160,67,0.12);--green-border:rgba(46,160,67,0.3);
+  --amber:#D29922;--amber-bg:rgba(210,153,34,0.12);--amber-border:rgba(210,153,34,0.3);
+  --red:#F85149;--red-bg:rgba(248,81,73,0.12);--red-border:rgba(248,81,73,0.3);
+  --indigo:#58A6FF;--indigo-bg:rgba(88,166,255,0.1);--indigo-border:rgba(88,166,255,0.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg4);padding:1px 5px;border-radius:4px;color:#79C0FF;border:1px solid var(--border)}
+
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-brand{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.sb-hex{width:18px;height:18px;background:var(--mg);clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);flex-shrink:0}
+.sb-name{font-weight:700;font-size:13px;color:var(--text)}
+.sb-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-top:1px}
+.sb-sec{padding:16px 12px 5px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3)}
+.sb-list{flex:1;overflow-y:auto;padding:4px 6px}
+.sb-item{display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;border-radius:6px;transition:background 0.1s}
+.sb-item:hover{background:var(--bg4)}
+.sb-item.active{background:rgba(194,0,78,0.15)}
+.sb-item.active .sb-iname{color:var(--text)}
+.sb-av{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;color:#fff;flex-shrink:0}
+.sb-iname{font-size:12.5px;font-weight:500;color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.sb-dot.ok{background:var(--green)}.sb-dot.warn{background:var(--amber)}.sb-dot.blocked{background:var(--red)}.sb-dot.neutral{background:var(--text3)}
+.sb-add{margin:8px;padding:8px;border:1px dashed var(--border2);border-radius:6px;text-align:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);transition:all 0.15s}
+.sb-add:hover{border-color:var(--mg);color:var(--mg)}
+.sb-foot{padding:10px 12px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── CLIENT HEADER ── */
+.ch{background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.ch-top{display:flex;align-items:center;gap:12px;padding:14px 20px 0}
+.ch-av{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;flex-shrink:0}
+.ch-name{font-weight:700;font-size:17px;letter-spacing:-0.02em;color:var(--text);line-height:1.1}
+.ch-meta{display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap}
+.ch-info{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)}
+.nav{display:flex;padding:0 20px;margin-top:6px}
+.nav-btn{padding:9px 14px;background:none;border:none;cursor:pointer;font-size:12.5px;font-weight:500;color:var(--text2);border-bottom:2px solid transparent;transition:all 0.15s;margin-bottom:-1px;white-space:nowrap}
+.nav-btn:hover{color:var(--text)}
+.nav-btn.active{color:var(--text);border-bottom-color:var(--mg);font-weight:600}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+.tab{display:none}.tab.active{display:block}
+.no-client{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.no-hex{width:32px;height:32px;background:var(--bg4);clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)}
+.no-txt{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)}
+.empty{padding:32px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3)}
+
+/* ── PILLS ── */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;border:1px solid transparent}
+.pill.ok{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.pill.warn{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+.pill.blocked{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.pill.neutral{background:var(--bg4);color:var(--text2);border-color:var(--border)}
+.pill.indigo{background:var(--indigo-bg);color:var(--indigo);border-color:var(--indigo-border)}
+.pill.mag{background:rgba(194,0,78,0.15);color:var(--mg);border-color:rgba(194,0,78,0.3)}
+.led{width:5px;height:5px;border-radius:50%;display:inline-block;flex-shrink:0}
+.led.ok{background:var(--green)}.led.warn{background:var(--amber)}.led.blocked{background:var(--red)}.led.neutral{background:var(--text3)}
+
+/* ── SECTION ── */
+.sec{margin-top:22px;margin-bottom:10px}
+.sec:first-child{margin-top:0}
+.sec-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.sec-title{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-0.01em}
+.sec-line{height:1px;background:var(--border);margin-top:8px}
+
+/* ── INFO GRID ── */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:14px}
+.ic{padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px}
+.ic-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.ic-val{font-size:13px;font-weight:600;color:var(--text);line-height:1.3}
+.desc-box{padding:13px 15px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:14px}
+
+/* ── PEOPLE ── */
+.people{display:flex;flex-wrap:wrap;gap:6px}
+.person{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:7px;min-width:180px}
+.p-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;color:#fff;flex-shrink:0}
+.p-name{font-weight:600;font-size:12.5px;color:var(--text);line-height:1.2}
+.p-role{font-size:11px;color:var(--text3);margin-top:1px}
+.p-badge{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 6px;border-radius:3px;flex-shrink:0}
+.p-badge.c{background:rgba(222,72,38,0.12);color:#DE4826}
+.p-badge.n{background:rgba(194,0,78,0.1);color:var(--mg)}
+
+/* ── STACK ── */
+.stack-row{display:flex;flex-wrap:wrap;gap:6px}
+.stag{padding:5px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;font-size:12.5px;font-weight:500;color:var(--text)}
+.stag span{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-left:5px}
+
+/* ── PROJECT CARD ── */
+.proj-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;overflow:hidden}
+.proj-hd{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;cursor:pointer;border-left:3px solid var(--mg);transition:background 0.1s}
+.proj-hd:hover{background:var(--bg3)}
+.proj-hd-name{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-0.01em;margin-bottom:6px}
+.proj-hd-pills{display:flex;gap:5px;flex-wrap:wrap}
+.proj-toggle{color:var(--text3);font-size:13px;transition:transform 0.15s;padding-top:2px;flex-shrink:0}
+.proj-toggle.open{transform:rotate(90deg)}
+.proj-body{display:none;border-top:1px solid var(--border)}
+.proj-body.open{display:block}
+
+/* ── PROJ DESC ── */
+.proj-desc-area{padding:16px;border-bottom:1px solid var(--border)}
+.proj-desc{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:10px}
+.proj-escopo{font-size:12px;color:var(--text3);margin-bottom:10px}
+.deliv-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.deliv-list{list-style:none;padding:0}
+.deliv-list li{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:12.5px;color:var(--text2);border-bottom:1px solid var(--border)}
+.deliv-list li:last-child{border-bottom:none}
+.deliv-bullet{color:var(--mg);font-weight:700;flex-shrink:0}
+
+/* ── JOURNEY TABS ── */
+.jtabs-wrap{border-bottom:1px solid var(--border)}
+.jtabs{display:flex;padding:0 16px;overflow-x:auto}
+.jtab-btn{padding:10px 16px;background:none;border:none;cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap;margin-bottom:-1px;display:flex;align-items:center;gap:6px}
+.jtab-btn:hover{color:var(--text)}
+.jtab-btn.active{color:var(--text);border-bottom-color:var(--mg);font-weight:600}
+.jtab-content{display:none}
+.jtab-content.active{display:block}
+
+/* ── JOURNEY VIEW ── */
+.jview{padding:20px}
+
+/* ACTIVATION STATUS BAR */
+.activation-bar{padding:16px 18px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:16px}
+.ab-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.ab-layers{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.ab-layer{padding:12px 14px;border-radius:6px;border:1px solid var(--border);text-align:center}
+.ab-layer.active-layer{background:var(--green-bg);border-color:var(--green-border)}
+.ab-layer.blocked-layer{background:var(--amber-bg);border-color:var(--amber-border)}
+.ab-layer.missing-layer{background:var(--red-bg);border-color:var(--red-border)}
+.ab-layer-name{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px}
+.ab-layer.active-layer .ab-layer-name{color:var(--green)}
+.ab-layer.blocked-layer .ab-layer-name{color:var(--amber)}
+.ab-layer.missing-layer .ab-layer-name{color:var(--red)}
+.ab-layer-status{font-size:11.5px;font-weight:500}
+.ab-layer.active-layer .ab-layer-status{color:var(--green)}
+.ab-layer.blocked-layer .ab-layer-status{color:var(--amber)}
+.ab-layer.missing-layer .ab-layer-status{color:var(--red)}
+.ab-layer-sub{font-size:10.5px;color:var(--text3);margin-top:2px}
+
+/* CHECKLIST */
+.checklist{display:flex;flex-direction:column;gap:4px;margin-bottom:16px}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px}
+.check-item.done{border-color:var(--green-border);background:var(--green-bg)}
+.check-item.todo{border-color:var(--amber-border)}
+.check-icon{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:9px;font-weight:700}
+.check-item.done .check-icon{background:var(--green);color:#fff}
+.check-item.todo .check-icon{background:var(--amber-bg);border:1.5px solid var(--amber);color:var(--amber)}
+.check-text{font-size:12.5px;color:var(--text2);line-height:1.4}
+.check-item.done .check-text{color:var(--text3);text-decoration:line-through}
+
+/* FIELDS */
+.fields-wrap{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px}
+.ftag{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;background:var(--bg4);border:1px solid var(--border);border-radius:4px;color:var(--text2)}
+
+/* ISSUES */
+.j-issues{display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+.j-issue{padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;border-left:2px solid var(--red)}
+.j-issue.warn{border-left-color:var(--amber)}
+.j-issue.info{border-left-color:var(--indigo)}
+.j-issue-id{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:3px}
+.j-issue-title{font-size:12.5px;font-weight:500;color:var(--text);margin-bottom:6px}
+.j-issue-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.j-issue-by{font-size:11px;color:var(--text3)}
+
+/* CREATIVE LINK */
+.creative-link{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;text-decoration:none;transition:border-color 0.15s;cursor:pointer}
+.creative-link:hover{border-color:var(--mg)}
+.creative-icon{width:32px;height:32px;border-radius:6px;background:rgba(194,0,78,0.1);border:1px solid rgba(194,0,78,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.creative-name{font-size:13px;font-weight:600;color:var(--text);flex:1}
+.creative-type{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)}
+
+/* OBS */
+.obs-box{padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:5px;font-size:12px;color:var(--text3);line-height:1.55;font-style:italic}
+
+/* ── SECTION LABEL INSIDE JVIEW ── */
+.jv-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;margin-top:16px}
+.jv-label:first-child{margin-top:0}
+
+/* ── TÉCNICO ── */
+.tech-tab{padding:0}
+.c4-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:16px;overflow-x:auto}
+.c4-title{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:20px}
+
+/* ── DATA TABLE ── */
+.dtable{width:100%;border-collapse:collapse;background:var(--bg3);border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:12px}
+.dtable th{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-align:left;padding:8px 12px;background:var(--bg4);color:var(--text3);border-bottom:1px solid var(--border)}
+.dtable td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle}
+.dtable tr:last-child td{border-bottom:none}
+.dtable td:first-child{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:600;color:var(--text)}
+.dtable tr:hover td{background:var(--bg4)}
+
+/* ── DOC LIST ── */
+.doc-list{display:flex;flex-direction:column;gap:4px}
+.doc-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;text-decoration:none;transition:border-color 0.15s;cursor:pointer}
+.doc-row:hover{border-color:var(--mg)}
+.doc-icon{width:28px;height:28px;border-radius:5px;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:var(--text3);flex-shrink:0}
+.doc-name{font-size:12.5px;font-weight:500;color:var(--text);flex:1}
+.doc-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)}
+
+/* ── AGENDA ── */
+.ag-list{display:flex;flex-direction:column;gap:4px}
+.ag-row{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px}
+.ag-date{text-align:center;min-width:38px;padding:5px 6px;background:var(--bg4);border-radius:5px;border:1px solid var(--border);flex-shrink:0}
+.ag-day{font-weight:700;font-size:16px;color:var(--text);line-height:1}
+.ag-month{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:1px}
+.ag-title{font-weight:600;font-size:12.5px;color:var(--text);margin-bottom:2px}
+.ag-parts{font-size:11.5px;color:var(--text3)}
+
+/* ── TRANS ── */
+.trans-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tc-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.tr-row{padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;margin-bottom:5px}
+.tr-title{font-weight:600;font-size:12.5px;color:var(--text);margin-bottom:2px}
+.tr-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)}
+.tr-sum{font-size:12px;color:var(--text2);margin-top:5px;line-height:1.5}
+.tr-link{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--indigo);display:block;margin-top:5px;text-decoration:none}
+
+/* ── DBG ── */
+#dbg{position:fixed;bottom:0;left:0;right:0;background:#0A0A0B;color:#a3e635;font-family:monospace;font-size:11px;padding:8px 14px;max-height:140px;overflow-y:auto;z-index:9999;border-top:2px solid var(--mg);display:none}
+#dbg.show{display:block}
+#dbg-btn{position:fixed;bottom:0;right:0;background:var(--mg);color:#fff;font-family:monospace;font-size:10px;padding:3px 10px;cursor:pointer;z-index:10000;border:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-hex"></div>
+      <div><div class="sb-name">Netbiis</div><div class="sb-sub">Client Cloud</div></div>
+    </div>
+    <div class="sb-sec">Clientes</div>
+    <div class="sb-list" id="clist"><div style="padding:10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">Carregando...</div></div>
+    <div class="sb-add" onclick="alert('Em breve')">+ Novo cliente</div>
+    <div class="sb-foot">Netbiis Client Cloud · v0.3</div>
+  </aside>
+  <div class="main" id="main">
+    <div class="no-client"><div class="no-hex"></div><div class="no-txt">Selecione um cliente</div></div>
+  </div>
+</div>
+<button id="dbg-btn" onclick="document.getElementById('dbg').classList.toggle('show')">DBG</button>
+<div id="dbg"></div>
+
+<script>
+const PUB='2PACX-1vSWBnP21S5C86OZYYCOqijT_mXtq8XNdpNBQG2mnzhL9FOgirDfaQ5nXDqPTYCzJvCFNWflSGF_d7tg';
+const GIDS={
+  clientes:'1343344067',stakeholders:'1958512368',stack:'1791147887',
+  projetos:'693403923',jornadas:'1551819716',fontes_dados:'1267510316',
+  issues:'1581403890',documentos:'1019560512',agendas:'418089559',transcricoes:'1097052222'
+};
+let D={},AC=null,AT='overview';
+
+function dbg(m,e=false){
+  const el=document.getElementById('dbg');
+  const d=document.createElement('div');
+  d.style.color=e?'#f85149':'#a3e635';
+  d.textContent=`[${new Date().toLocaleTimeString()}] ${m}`;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+
+async function fetchSheet(name){
+  const url=`https://docs.google.com/spreadsheets/d/e/${PUB}/pub?output=csv&gid=${GIDS[name]}&single=true`;
+  dbg(`fetch ${name}`);
+  const r=await fetch(url,{cache:'no-cache'});
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  const t=await r.text();
+  dbg(`${name} → ${t.length}c`);
+  return parseCSV(t);
+}
+
+function parseCSV(text){
+  const raw=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  const lines=[];let cur='',inQ=false;
+  for(let i=0;i<raw.length;i++){
+    const c=raw[i];
+    if(c==='"'){if(inQ&&raw[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(c==='\n'&&!inQ){lines.push(cur);cur='';}
+    else cur+=c;
+  }
+  if(cur)lines.push(cur);
+  if(lines.length<2)return[];
+  const headers=splitLine(lines[0]);
+  return lines.slice(1).map(l=>{
+    const vals=splitLine(l);const obj={};
+    headers.forEach((h,i)=>obj[h.trim()]=(vals[i]||'').trim());
+    return obj;
+  }).filter(r=>Object.values(r).some(v=>v));
+}
+function splitLine(line){
+  const out=[];let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(c===','&&!inQ){out.push(cur);cur='';}
+    else cur+=c;
+  }
+  out.push(cur);return out;
+}
+function splitField(s,mode){
+  if(!s||s.includes('[preencher'))return[];
+  if(mode==='line'){
+    const p=s.includes('\n')?s.split('\n'):s.split('\\n');
+    return p.map(x=>x.replace(/^\d+\.\s*/,'').trim()).filter(Boolean);
+  }
+  return s.split(/[·|]/).map(x=>x.trim()).filter(Boolean);
+}
+
+async function loadAll(){
+  dbg('carregando...');
+  for(const k of Object.keys(GIDS)){
+    try{D[k]=await fetchSheet(k);}
+    catch(e){dbg(`ERRO ${k}: ${e.message}`,true);D[k]=[];}
+  }
+  dbg(`clientes:${(D.clientes||[]).length} jornadas:${(D.jornadas||[]).length} issues:${(D.issues||[]).length}`);
+  renderSidebar();
+  if(D.clientes?.length)select(D.clientes[0].id);
+}
+
+function ini(n){if(!n)return'?';return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()}
+function sc(s){
+  if(!s)return'neutral';const v=s.toLowerCase();
+  if(v.includes('andamento')||v.includes('ok')||v.includes('ativo')||v.includes('rodando'))return'ok';
+  if(v.includes('risco')||v.includes('aten')||v.includes('parcial')||v.includes('vazia')||v.includes('mapear'))return'warn';
+  if(v.includes('bloq')||v.includes('criti')||v.includes('não existe'))return'blocked';
+  return'neutral';
+}
+function ic(s){if(!s)return'';const v=s.toLowerCase();if(v.includes('criti'))return'';if(v.includes('aten'))return'warn';return'info';}
+const MO=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+// layer status from jornada status field
+function layerStatus(status){
+  const v=(status||'').toLowerCase();
+  if(v.includes('l2'))return{l0:'active',l1:'active',l2:'active'};
+  if(v.includes('l1'))return{l0:'active',l1:'active',l2:'missing'};
+  if(v.includes('l0'))return{l0:'active',l1:'blocked',l2:'missing'};
+  if(v.includes('mapear'))return{l0:'missing',l1:'missing',l2:'missing'};
+  return{l0:'active',l1:'blocked',l2:'missing'};
+}
+
+function renderSidebar(){
+  const el=document.getElementById('clist');
+  if(!D.clientes?.length){el.innerHTML='<div style="padding:10px;font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--text3)">Nenhum cliente</div>';return;}
+  el.innerHTML=D.clientes.map(c=>`
+    <div class="sb-item ${AC===c.id?'active':''}" onclick="select('${c.id}')">
+      <div class="sb-av" style="background:${c.cor||'#444'}">${ini(c.nome)}</div>
+      <span class="sb-iname">${c.nome}</span>
+      <span class="sb-dot ${sc(c.status_geral)}"></span>
+    </div>`).join('');
+}
+
+function select(id){AC=id;AT='overview';renderSidebar();renderMain();}
+function switchTab(id){
+  AT=id;
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+  document.querySelectorAll('.tab').forEach(p=>p.classList.toggle('active',p.id==='t-'+id));
+}
+
+function renderMain(){
+  const c=D.clientes.find(x=>x.id===AC);if(!c)return;
+  const col=c.cor||'#555';
+  const sh=(D.stakeholders||[]).filter(x=>x.cliente_id===AC);
+  const stk=(D.stack||[]).filter(x=>x.cliente_id===AC);
+  const proj=(D.projetos||[]).filter(x=>x.cliente_id===AC);
+  const ag=(D.agendas||[]).filter(x=>x.cliente_id===AC);
+  const tr=(D.transcricoes||[]).filter(x=>x.cliente_id===AC);
+  const fontes=(D.fontes_dados||[]).filter(x=>proj.some(p=>p.id===x.projeto_id));
+
+  const TABS=[
+    {id:'overview',label:'Visão Geral'},
+    {id:'projects',label:`Projetos${proj.length?` (${proj.length})`:''}`},
+    {id:'tech',label:'Técnico'},
+    {id:'docs',label:'Documentos'},
+    {id:'agenda',label:'Agendas'},
+    {id:'trans',label:'Transcrições'},
+  ];
+
+  document.getElementById('main').innerHTML=`
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-av" style="background:${col}">${ini(c.nome)}</div>
+        <div style="flex:1">
+          <div class="ch-name">${c.nome}</div>
+          <div class="ch-meta">
+            ${c.cidade||c.pais?`<span class="ch-info">${[c.cidade,c.pais].filter(Boolean).join(', ')}</span>`:''}
+            <span class="ch-info">${c.mercado||''}</span>
+            <span class="pill ${sc(c.status_geral)}"><span class="led ${sc(c.status_geral)}"></span>${c.status_geral||'—'}</span>
+          </div>
+        </div>
+      </div>
+      <nav class="nav">
+        ${TABS.map(t=>`<button class="nav-btn ${AT===t.id?'active':''}" data-tab="${t.id}" onclick="switchTab('${t.id}')">${t.label}</button>`).join('')}
+      </nav>
+    </div>
+    <div class="content">
+      <div class="tab ${AT==='overview'?'active':''}" id="t-overview">${renderOverview(c,sh,stk)}</div>
+      <div class="tab ${AT==='projects'?'active':''}" id="t-projects">${renderProjects(proj)}</div>
+      <div class="tab ${AT==='tech'?'active':''}" id="t-tech">${renderTech(fontes,stk)}</div>
+      <div class="tab ${AT==='docs'?'active':''}" id="t-docs">${renderDocs(proj)}</div>
+      <div class="tab ${AT==='agenda'?'active':''}" id="t-agenda">${renderAgenda(ag)}</div>
+      <div class="tab ${AT==='trans'?'active':''}" id="t-trans">${renderTrans(tr)}</div>
+    </div>`;
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────
+function renderOverview(c,sh,stk){
+  const cli=sh.filter(s=>s.tipo==='cliente');
+  const nb=sh.filter(s=>s.tipo==='netbiis');
+  return `
+    <div class="sec"><div class="sec-label">Informações do cliente</div><div class="sec-line"></div></div>
+    <div class="info-grid">
+      ${c.mercado?`<div class="ic"><div class="ic-label">Mercado</div><div class="ic-val">${c.mercado}</div></div>`:''}
+      ${c.segmento?`<div class="ic"><div class="ic-label">Segmento</div><div class="ic-val">${c.segmento}</div></div>`:''}
+      ${c.pais?`<div class="ic"><div class="ic-label">Localização</div><div class="ic-val">${[c.cidade,c.pais].filter(Boolean).join(', ')}</div></div>`:''}
+      <div class="ic"><div class="ic-label">Status</div><div class="ic-val"><span class="pill ${sc(c.status_geral)}">${c.status_geral||'—'}</span></div></div>
+    </div>
+    ${c.descricao?`<div class="desc-box">${c.descricao}</div>`:''}
+    ${stk.length?`<div class="sec"><div class="sec-label">Stack de Tecnologia</div><div class="sec-line"></div></div><div class="stack-row">${stk.map(s=>`<div class="stag">${s.tecnologia}<span>${s.categoria||''}</span></div>`).join('')}</div>`:''}
+    ${cli.length?`<div class="sec" style="margin-top:20px"><div class="sec-label">Stakeholders do Cliente</div><div class="sec-line"></div></div><div class="people">${cli.map(s=>`<div class="person"><div class="p-av" style="background:#DE4826">${ini(s.nome)}</div><div><div class="p-name">${s.nome}</div><div class="p-role">${s.cargo||''}</div></div><div class="p-badge c">Cliente</div></div>`).join('')}</div>`:''}
+    ${nb.length?`<div class="sec" style="margin-top:16px"><div class="sec-label">Time Netbiis</div><div class="sec-line"></div></div><div class="people">${nb.map(s=>`<div class="person"><div class="p-av" style="background:rgba(194,0,78,0.2);color:var(--mg)">${ini(s.nome)}</div><div><div class="p-name">${s.nome}</div><div class="p-role">${s.cargo||''}</div></div><div class="p-badge n">Netbiis</div></div>`).join('')}</div>`:''}
+  `;
+}
+
+// ── PROJECTS ──────────────────────────────────────────────────
+function renderProjects(proj){
+  if(!proj.length)return'<div class="empty">Nenhum projeto cadastrado</div>';
+  return proj.map((p,pi)=>{
+    const jornadas=(D.jornadas||[]).filter(j=>j.projeto_id===p.id);
+    const allIss=(D.issues||[]).filter(x=>x.projeto_id===p.id);
+    const abertos=allIss.filter(x=>(x.status||'').toLowerCase().includes('aberto'));
+    const delivs=splitField(p.deliverables,'line');
+    const s=sc(p.status);
+    return `
+      <div class="proj-card">
+        <div class="proj-hd" onclick="tgProj('pb${pi}','pt${pi}')">
+          <div style="flex:1">
+            <div class="proj-hd-name">${p.nome}</div>
+            <div class="proj-hd-pills">
+              <span class="pill ${s}"><span class="led ${s}"></span>${p.status||'—'}</span>
+              ${jornadas.length?`<span class="pill neutral">${jornadas.length} jornadas</span>`:''}
+              ${abertos.length?`<span class="pill blocked">${abertos.length} issues abertos</span>`:''}
+            </div>
+          </div>
+          <span class="proj-toggle" id="pt${pi}">›</span>
+        </div>
+        <div class="proj-body" id="pb${pi}">
+          <div class="proj-desc-area">
+            ${p.descricao?`<div class="proj-desc">${p.descricao}</div>`:''}
+            ${p.escopo?`<div class="proj-escopo">${p.escopo}</div>`:''}
+            ${delivs.length?`<div class="deliv-label">Deliverables</div><ul class="deliv-list">${delivs.map(d=>`<li><span class="deliv-bullet">›</span>${d}</li>`).join('')}</ul>`:''}
+          </div>
+          ${jornadas.length?`
+          <div class="jtabs-wrap">
+            <div class="jtabs">
+              ${jornadas.map((j,ji)=>{
+                const jIss=allIss.filter(x=>x.jornada_id&&x.jornada_id.split(',').map(s=>s.trim()).includes(j.id));
+                return `<button class="jtab-btn ${ji===0?'active':''}" data-jtab="${pi}_${ji}" onclick="switchJTab('${pi}','${ji}')">
+                  <span class="led ${sc(j.status)}"></span>
+                  ${j.nome}
+                  ${jIss.length?`<span class="pill blocked" style="padding:1px 5px;font-size:8px">${jIss.length}</span>`:''}
+                </button>`;
+              }).join('')}
+            </div>
+          </div>
+          ${jornadas.map((j,ji)=>renderJourneyView(j,allIss,p,pi,ji)).join('')}`:''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function switchJTab(pi,ji){
+  document.querySelectorAll(`[data-jtab^="${pi}_"]`).forEach(b=>b.classList.toggle('active',b.dataset.jtab===`${pi}_${ji}`));
+  document.querySelectorAll(`[data-jcontent^="${pi}_"]`).forEach(c=>c.classList.toggle('active',c.dataset.jcontent===`${pi}_${ji}`));
+}
+
+function renderJourneyView(j,allIss,p,pi,ji){
+  const jIss=allIss.filter(x=>x.jornada_id&&x.jornada_id.split(',').map(s=>s.trim()).includes(j.id));
+  const campos=j.campos_necessarios?j.campos_necessarios.split(',').map(s=>s.trim()).filter(Boolean):[];
+  const falta=splitField(j.o_que_falta,'dot');
+  const layers=layerStatus(j.status);
+
+  // find creative doc for this journey
+  const projDocs=(D.documentos||[]).filter(d=>d.projeto_id===p.id);
+  const creativeDocs=projDocs.filter(d=>{
+    const nome=(d.nome||'').toLowerCase();
+    const jnome=(j.nome||'').toLowerCase();
+    return nome.includes('journey')||nome.includes('jornada')||
+      (jnome.includes('prospect')&&nome.includes('prospect'))||
+      (jnome.includes('1ª → 2ª')&&(nome.includes('first')||nome.includes('second')))||
+      (jnome.includes('pós')&&nome.includes('post'))||
+      (jnome.includes('evento')&&nome.includes('event'));
+  });
+
+  const layerMap={
+    active:{cls:'active-layer',status:'Ativo',sub:'Rodando'},
+    blocked:{cls:'blocked-layer',status:'Bloqueado',sub:'Tabelas vazias'},
+    missing:{cls:'missing-layer',status:'Não existe',sub:'Requer construção'}
+  };
+
+  return `
+    <div class="jtab-content ${ji===0?'active':''}" data-jcontent="${pi}_${ji}">
+      <div class="jview">
+
+        <div class="jv-label">Status de ativação</div>
+        <div class="activation-bar">
+          <div class="ab-layers">
+            ${['l0','l1','l2'].map(l=>{
+              const st=layers[l];
+              const lm=layerMap[st]||layerMap.blocked;
+              const labels={l0:'L0 · Broadcast',l1:'L1 · CDP',l2:'L2 · CDPAA'};
+              return `<div class="ab-layer ${lm.cls}">
+                <div class="ab-layer-name">${labels[l]}</div>
+                <div class="ab-layer-status">${lm.status}</div>
+                <div class="ab-layer-sub">${lm.sub}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+
+        ${falta.length?`
+        <div class="jv-label">O que falta para ativar</div>
+        <div class="checklist">
+          ${falta.map(f=>`<div class="check-item todo">
+            <div class="check-icon">○</div>
+            <div class="check-text">${f}</div>
+          </div>`).join('')}
+        </div>`:''}
+
+        ${campos.length?`
+        <div class="jv-label">Campos necessários</div>
+        <div class="fields-wrap">${campos.map(f=>`<span class="ftag">${f}</span>`).join('')}</div>`:''}
+
+        ${jIss.length?`
+        <div class="jv-label">Issues (${jIss.length})</div>
+        <div class="j-issues">${jIss.map(iss=>`
+          <div class="j-issue ${ic(iss.severidade)}">
+            <div class="j-issue-id">${iss.id}</div>
+            <div class="j-issue-title">${iss.titulo}</div>
+            <div class="j-issue-meta">
+              <span class="pill ${sc(iss.severidade)}">${iss.severidade||'—'}</span>
+              <span class="pill neutral">${iss.status||'—'}</span>
+              <span class="j-issue-by">${iss.descoberto_por||''} · ${iss.data||''}</span>
+            </div>
+          </div>`).join('')}</div>`:''}
+
+        ${creativeDocs.length?`
+        <div class="jv-label">Criativo / Before & After</div>
+        ${creativeDocs.map(d=>`
+          <a class="creative-link" href="${d.url&&!d.url.includes('preencher')?d.url:'#'}" target="${d.url&&!d.url.includes('preencher')?'_blank':'_self'}">
+            <div class="creative-icon">📄</div>
+            <div>
+              <div class="creative-name">${d.nome}</div>
+              <div class="creative-type">${d.tipo||''} · ${d.data||''}</div>
+            </div>
+            <span class="pill neutral">↗ Abrir</span>
+          </a>`).join('')}`:''}
+
+        ${j.observacao&&!j.observacao.includes('preencher')?`<div class="obs-box" style="margin-top:12px">${j.observacao}</div>`:''}
+
+      </div>
+    </div>`;
+}
+
+function tgProj(b,t){
+  const el=document.getElementById(b),tg=document.getElementById(t);
+  if(el){el.classList.toggle('open');if(tg)tg.classList.toggle('open');}
+}
+
+// ── TÉCNICO ───────────────────────────────────────────────────
+function renderTech(fontes,stk){
+  return `
+    <div class="sec"><div class="sec-label">Arquitetura de Dados</div><div class="sec-line"></div></div>
+    <div class="c4-wrap">
+      <div class="c4-title">Fluxo de dados · Data Mart Emarsys</div>
+      <svg viewBox="0 0 820 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:820px;font-family:'JetBrains Mono',monospace">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#484F58"/>
+          </marker>
+          <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#2EA043"/>
+          </marker>
+          <marker id="arr-amber" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#D29922"/>
+          </marker>
+          <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#F85149"/>
+          </marker>
+        </defs>
+
+        <!-- COLUMN LABELS -->
+        <text x="90" y="18" text-anchor="middle" font-size="9" fill="#484F58" letter-spacing="1" font-weight="700">FONTES</text>
+        <text x="310" y="18" text-anchor="middle" font-size="9" fill="#484F58" letter-spacing="1" font-weight="700">DATA MART</text>
+        <text x="560" y="18" text-anchor="middle" font-size="9" fill="#484F58" letter-spacing="1" font-weight="700">PREPARAÇÃO</text>
+        <text x="740" y="18" text-anchor="middle" font-size="9" fill="#484F58" letter-spacing="1" font-weight="700">CONSUMO</text>
+
+        <!-- DIVIDERS -->
+        <line x1="195" y1="10" x2="195" y2="330" stroke="#30363D" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="420" y1="10" x2="420" y2="330" stroke="#30363D" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="650" y1="10" x2="650" y2="330" stroke="#30363D" stroke-width="1" stroke-dasharray="4,4"/>
+
+        <!-- SOURCE: SAP ECC -->
+        <rect x="10" y="30" width="160" height="44" rx="6" fill="#1C2128" stroke="#3D444D" stroke-width="1.5"/>
+        <text x="90" y="50" text-anchor="middle" font-size="11" fill="#E6EDF3" font-weight="700">SAP ECC</text>
+        <text x="90" y="64" text-anchor="middle" font-size="9" fill="#8B949E">Produtos · Lojas · Preços</text>
+
+        <!-- SOURCE: CDP -->
+        <rect x="10" y="110" width="160" height="44" rx="6" fill="#1C2128" stroke="#3D444D" stroke-width="1.5"/>
+        <text x="90" y="130" text-anchor="middle" font-size="11" fill="#E6EDF3" font-weight="700">CDP</text>
+        <text x="90" y="144" text-anchor="middle" font-size="9" fill="#8B949E">Clientes · Comportamento</text>
+
+        <!-- SOURCE: Commerce Tools -->
+        <rect x="10" y="190" width="160" height="44" rx="6" fill="#1C2128" stroke="#D29922" stroke-width="1.5"/>
+        <text x="90" y="210" text-anchor="middle" font-size="11" fill="#E6EDF3" font-weight="700">Commerce Tools</text>
+        <text x="90" y="224" text-anchor="middle" font-size="9" fill="#D29922">Product Feed CSV ⚠</text>
+
+        <!-- DATA MART: DIM_PRODUCT -->
+        <rect x="212" y="30" width="185" height="36" rx="5" fill="#161B22" stroke="#D29922" stroke-width="1"/>
+        <text x="304" y="45" text-anchor="middle" font-size="10" fill="#E6EDF3" font-weight="600">DIM_PRODUCT</text>
+        <text x="304" y="58" text-anchor="middle" font-size="9" fill="#D29922">● Vazia</text>
+
+        <!-- DATA MART: DIM_PLANT -->
+        <rect x="212" y="80" width="185" height="36" rx="5" fill="#161B22" stroke="#D29922" stroke-width="1"/>
+        <text x="304" y="95" text-anchor="middle" font-size="10" fill="#E6EDF3" font-weight="600">V_DIM_PLANT</text>
+        <text x="304" y="108" text-anchor="middle" font-size="9" fill="#D29922">● Vazia</text>
+
+        <!-- DATA MART: DIM_ASSORTMENT -->
+        <rect x="212" y="130" width="185" height="36" rx="5" fill="#161B22" stroke="#D29922" stroke-width="1"/>
+        <text x="304" y="145" text-anchor="middle" font-size="10" fill="#E6EDF3" font-weight="600">V_DIM_ASSORTMENT_SAP</text>
+        <text x="304" y="158" text-anchor="middle" font-size="9" fill="#D29922">● Vazia</text>
+
+        <!-- DATA MART: REGION_PRICES -->
+        <rect x="212" y="180" width="185" height="36" rx="5" fill="#161B22" stroke="#D29922" stroke-width="1"/>
+        <text x="304" y="195" text-anchor="middle" font-size="10" fill="#E6EDF3" font-weight="600">FCT_REGION_PRICES</text>
+        <text x="304" y="208" text-anchor="middle" font-size="9" fill="#D29922">● Vazia</text>
+
+        <!-- DATA MART: DIM_CUSTOMER_CDP -->
+        <rect x="212" y="230" width="185" height="36" rx="5" fill="#161B22" stroke="#D29922" stroke-width="1"/>
+        <text x="304" y="245" text-anchor="middle" font-size="10" fill="#E6EDF3" font-weight="600">DIM_CUSTOMER_CDP</text>
+        <text x="304" y="258" text-anchor="middle" font-size="9" fill="#D29922">● Vazia</text>
+
+        <!-- DATA MART: CDPAA -->
+        <rect x="212" y="280" width="185" height="36" rx="5" fill="#161B22" stroke="#F85149" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="304" y="295" text-anchor="middle" font-size="10" fill="#E6EDF3" font-weight="600">CDPAA</text>
+        <text x="304" y="308" text-anchor="middle" font-size="9" fill="#F85149">● Não existe</text>
+
+        <!-- PREP: PRODUCT_FEED -->
+        <rect x="437" y="80" width="195" height="36" rx="5" fill="#161B22" stroke="#D29922" stroke-width="1"/>
+        <text x="534" y="95" text-anchor="middle" font-size="10" fill="#E6EDF3" font-weight="600">PRODUCT_FEED</text>
+        <text x="534" y="108" text-anchor="middle" font-size="9" fill="#D29922">● Schema issues</text>
+
+        <!-- PREP: Customer Segments -->
+        <rect x="437" y="180" width="195" height="36" rx="5" fill="#161B22" stroke="#D29922" stroke-width="1"/>
+        <text x="534" y="195" text-anchor="middle" font-size="10" fill="#E6EDF3" font-weight="600">Segmentos de Cliente</text>
+        <text x="534" y="208" text-anchor="middle" font-size="9" fill="#D29922">● Aguarda CDP</text>
+
+        <!-- PREP: CDPAA enriched -->
+        <rect x="437" y="270" width="195" height="36" rx="5" fill="#161B22" stroke="#F85149" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="534" y="285" text-anchor="middle" font-size="10" fill="#E6EDF3" font-weight="600">Atributos Enriquecidos</text>
+        <text x="534" y="298" text-anchor="middle" font-size="9" fill="#F85149">● L2 · Requer CDPAA</text>
+
+        <!-- CONSUMPTION: EMARSYS -->
+        <rect x="666" y="140" width="144" height="90" rx="8" fill="#1C2128" stroke="#C2004E" stroke-width="2"/>
+        <text x="738" y="168" text-anchor="middle" font-size="13" fill="#E6EDF3" font-weight="700">Emarsys</text>
+        <text x="738" y="185" text-anchor="middle" font-size="9" fill="#8B949E">Customer Engagement</text>
+        <text x="738" y="200" text-anchor="middle" font-size="9" fill="#8B949E">24 emails · 4 jornadas</text>
+        <text x="738" y="217" text-anchor="middle" font-size="9" fill="#C2004E">● L0 ativo</text>
+
+        <!-- ARROWS SAP → DIM tables -->
+        <line x1="170" y1="48" x2="212" y2="48" stroke="#484F58" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="170" y1="52" x2="200" y2="52" stroke="#484F58" stroke-width="1" opacity="0.4"/>
+        <line x1="200" y1="52" x2="200" y2="98" stroke="#484F58" stroke-width="1" opacity="0.4"/>
+        <line x1="200" y1="98" x2="212" y2="98" stroke="#484F58" stroke-width="1" marker-end="url(#arr)" opacity="0.4"/>
+        <line x1="200" y1="148" x2="212" y2="148" stroke="#484F58" stroke-width="1" marker-end="url(#arr)" opacity="0.4"/>
+        <line x1="170" y1="52" x2="200" y2="148" stroke="none"/>
+        <!-- SAP to assortment and prices via connector -->
+        <path d="M170,52 C200,52 200,148 212,148" stroke="#484F58" stroke-width="1" fill="none" marker-end="url(#arr)" opacity="0.35"/>
+        <path d="M170,52 C200,52 200,198 212,198" stroke="#484F58" stroke-width="1" fill="none" marker-end="url(#arr)" opacity="0.35"/>
+
+        <!-- CDP → DIM_CUSTOMER -->
+        <line x1="170" y1="132" x2="212" y2="248" stroke="#484F58" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+
+        <!-- Commerce Tools → PRODUCT_FEED -->
+        <line x1="170" y1="212" x2="437" y2="98" stroke="#D29922" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr-amber)" opacity="0.6"/>
+
+        <!-- DIM tables → PRODUCT_FEED -->
+        <line x1="397" y1="48" x2="437" y2="92" stroke="#484F58" stroke-width="1" marker-end="url(#arr)" opacity="0.5"/>
+        <line x1="397" y1="98" x2="437" y2="96" stroke="#484F58" stroke-width="1" marker-end="url(#arr)" opacity="0.5"/>
+        <line x1="397" y1="148" x2="437" y2="100" stroke="#484F58" stroke-width="1" marker-end="url(#arr)" opacity="0.5"/>
+        <line x1="397" y1="198" x2="437" y2="104" stroke="#484F58" stroke-width="1" marker-end="url(#arr)" opacity="0.5"/>
+
+        <!-- DIM_CUSTOMER → Segments -->
+        <line x1="397" y1="248" x2="437" y2="198" stroke="#484F58" stroke-width="1" marker-end="url(#arr)" opacity="0.5"/>
+
+        <!-- DIM_CUSTOMER + CDPAA → Enriched -->
+        <line x1="397" y1="252" x2="437" y2="285" stroke="#484F58" stroke-width="1" marker-end="url(#arr)" opacity="0.4"/>
+        <line x1="397" y1="298" x2="437" y2="290" stroke="#F85149" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arr-red)" opacity="0.5"/>
+
+        <!-- PREP → EMARSYS -->
+        <line x1="632" y1="98" x2="666" y2="170" stroke="#D29922" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+        <line x1="632" y1="198" x2="666" y2="185" stroke="#D29922" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+        <line x1="632" y1="288" x2="666" y2="205" stroke="#F85149" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arr-red)" opacity="0.6"/>
+
+        <!-- LEGEND -->
+        <rect x="10" y="300" width="180" height="32" rx="4" fill="#0D1117" stroke="#30363D" stroke-width="1"/>
+        <line x1="20" y1="311" x2="40" y2="311" stroke="#484F58" stroke-width="1.5"/>
+        <text x="45" y="315" font-size="8" fill="#484F58">Fluxo ativo (parcial)</text>
+        <line x1="20" y1="324" x2="40" y2="324" stroke="#F85149" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="45" y="328" font-size="8" fill="#F85149">Requer construção</text>
+      </svg>
+    </div>
+
+    <div class="sec"><div class="sec-label">Status das Fontes</div><div class="sec-line"></div></div>
+    ${fontes.length?`
+    <table class="dtable">
+      <thead><tr><th>Fonte</th><th>Camada</th><th>Status</th><th>Emails impactados</th><th>Responsável</th></tr></thead>
+      <tbody>${fontes.map(f=>`<tr>
+        <td><code>${f.nome}</code></td>
+        <td><span class="pill ${f.camada==='L2'?'mag':f.camada==='L1'?'warn':'neutral'}">${f.camada}</span></td>
+        <td><span class="pill ${sc(f.status)}">${f.status}</span></td>
+        <td style="color:var(--text3);font-size:11.5px">${f.emails_impactados||'—'}</td>
+        <td style="color:var(--text3);font-size:11.5px">${f.responsavel&&!f.responsavel.includes('preen')?f.responsavel:'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table>`:'<div class="empty">Nenhuma fonte cadastrada</div>'}
+  `;
+}
+
+// ── DOCS ──────────────────────────────────────────────────────
+function renderDocs(proj){
+  const ids=proj.map(p=>p.id);
+  const docs=(D.documentos||[]).filter(d=>ids.includes(d.projeto_id));
+  if(!docs.length)return'<div class="empty">Nenhum documento cadastrado</div>';
+  const byP={};
+  docs.forEach(d=>{if(!byP[d.projeto_id])byP[d.projeto_id]=[];byP[d.projeto_id].push(d);});
+  return Object.entries(byP).map(([pid,pd])=>{
+    const p=proj.find(x=>x.id===pid);
+    return `
+      <div class="sec"><div class="sec-label">${p?p.nome:pid}</div><div class="sec-line"></div></div>
+      <div class="doc-list">${pd.map(d=>`
+        <a class="doc-row" href="${d.url&&!d.url.includes('preencher')?d.url:'#'}" target="${d.url&&!d.url.includes('preencher')?'_blank':'_self'}">
+          <div class="doc-icon">${(d.tipo||'DOC').substring(0,3).toUpperCase()}</div>
+          <div class="doc-name">${d.nome}</div>
+          <span class="pill neutral">${d.tipo||'—'}</span>
+          <div class="doc-date">${d.data||''}</div>
+        </a>`).join('')}</div>`;
+  }).join('');
+}
+
+// ── AGENDA ────────────────────────────────────────────────────
+function renderAgenda(ag){
+  if(!ag.length)return'<div class="empty">Nenhuma agenda cadastrada</div>';
+  return`<div class="ag-list">${ag.map(a=>{
+    const p=(a.data||'').split('-');
+    return`<div class="ag-row">
+      <div class="ag-date"><div class="ag-day">${p[2]||'—'}</div><div class="ag-month">${p[1]?MO[parseInt(p[1])-1]:''}</div></div>
+      <div style="flex:1"><div class="ag-title">${a.titulo||'—'}</div><div class="ag-parts">${a.participantes||''}</div></div>
+      <span class="pill neutral">${a.tipo||'—'}</span>
+      ${a.link&&!a.link.includes('preencher')?`<a href="${a.link}" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--indigo);text-decoration:none;flex-shrink:0">↗</a>`:''}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── TRANS ─────────────────────────────────────────────────────
+function renderTrans(tr){
+  if(!tr.length)return'<div class="empty">Nenhuma transcrição cadastrada</div>';
+  const cli=tr.filter(t=>t.tipo==='cliente');
+  const int=tr.filter(t=>t.tipo!=='cliente');
+  const col=(items,label)=>`<div>
+    <div class="tc-label">${label} (${items.length})</div>
+    ${items.length?items.map(t=>`<div class="tr-row">
+      <div class="tr-title">${t.titulo||'—'}</div>
+      <div class="tr-meta">${t.data||''} · ${t.participantes||''}</div>
+      ${t.resumo?`<div class="tr-sum">${t.resumo}</div>`:''}
+      ${t.url&&!t.url.includes('preencher')?`<a href="${t.url}" target="_blank" class="tr-link">↗ Abrir</a>`:''}
+    </div>`).join(''):'<div class="empty" style="padding:16px 0">Nenhuma</div>'}
+  </div>`;
+  return`<div class="trans-cols">${col(cli,'Interações com o cliente')}${col(int,'Discussões internas')}</div>`;
+}
+
+loadAll();
+</script>
+</body>
+</html>
